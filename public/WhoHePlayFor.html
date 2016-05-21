@@ -17,22 +17,23 @@
 			var score;
 			function init() {
 				$('#main').show();
-				$('#alert').html('');
+				$('#scores').html('');
 				playerCounter = 0;
 				score = 0;
-				var time = 60;
+				var time = 10;
 		  		var timer = setInterval(function() { 
 		  			time--;
 		  			$('#timer').html("Seconds Left: " + time);
 		  			if(time === 0) {
 		  				$('#main').hide();
-		  				$('#alert').prepend('<h1>You got ' + score + ' points!</h1>');
+		  				$('#scores').show();
 		  				$('#alert').show();
+		  				checkHighScore();
 		  				clearInterval(timer);
 		  			} 
 		  		}, 1000);
 				$.ajax({
-				  url: '/JSONreq',
+				  url: '/players',
 				  complete: function(data) {
 				    playerList = data.responseJSON.playerList;
 				    console.log(data);
@@ -41,7 +42,7 @@
 				    //$('#img').css({'background-image': 'url(' + nextPlayer.url + ')'});
 				    $('#img').html("<img id='" + playerCounter + "' src=' " + currPlayer.url +"' onError=newPlayer(false)>");
 				    playerCounter++;
-				    $('#img').append("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none' onError=newPlayer(false)>");
+				    $('#img').append("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none' onError=changeNext(" + playerCounter + ")>");
 				  }
 				});
 			}
@@ -56,18 +57,64 @@
 					nextPlayer = playerList[randIndex];
 					console.log(currPlayer);
 					if(!pass) {
-						playerList.splice(randIndex, 1); //Take player out of remaining players if the player passed
+						playerList.splice(randIndex, 1); //Take player out of remaining players if the player didn't pass.
 					}
+					console.log("player Counter : " + playerCounter);
 					$('#img').html("<img id='" + playerCounter + "' src=' " + currPlayer.url +"' onError=newPlayer(false)>");
 				    playerCounter++;
-				    $('#img').append("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none'");
+				    $('#img').append("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none' onError='changeNext(" + playerCounter + ")'>");
 
 			}
+			function checkHighScore(){
+				$.ajax({
+				  url: '/highscores',
+				  complete: function(data) {
+				  	var highScores = data.responseJSON.scores;
+				  	console.log(highScores);
+				  	var smallest = highScores[highScores.length-1];
+				  	if (score > smallest || smallest == null) {
+				  		$('#scores').append('<h1>You got ' + score + ' points!</h1>');
+				  		$("#scores").append('<h2>Congratulations, you got a High Score!</h2><br>')
+				  		$("#scores").append('<label for="name">Enter name here: </label>');
+				  		$("#scores").append('<input id="name" type="text"><br>')
+				  		$("#scores").append('<button onclick="addHighScore(' + highScores + ')">Submit</button>')
+				  		
+				  		
+				  		
+				  	}
+				  }
+				});
+			}
+			function addHighScore(highScores){
+				if(highScores) {
+					highScores = highScores.splice(highScores.length-1, 1);//Splice out the smallest score and replace with current score
+					highScores.name = score; 
+				} else {
+					var highScores = {};
+					highScores.name = score;
+				}
+				$.ajax({
+					  type: "POST",
+					  url: "/postScores",
+					  data: highScores,
+					  success: null,
+					  dataType: "json"
+					});
+			}
+			function changeNext(playerCounter){//Handles bad pictures and changes next picture
+				console.log("error");
+				playerList.splice(nextPlayer,1);
+				var randIndex = Math.floor(playerList.length * Math.random());
+				nextPlayer = playerList[randIndex];
+				console.log(nextPlayer.name + " " + playerCounter);
+				console.log(playerCounter);
+				$('#'+playerCounter).html("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none' onError=changeNext(" + playerCounter + ")>");
+			}
 			function check() {
-				var guess = $('input').val().toLowerCase();
+				var guess = $('#answer').val().toLowerCase();
 				var answer = currPlayer.name.toLowerCase();
 				//Allow user to also put in last name
-				var lastNameGuessArray = guess.split(" ");
+				var lastNameGuessArray = guess.split(/[\s-]/);
 				var lastNameArray = answer.split(" ");
 				console.log(lastNameGuessArray);
 				console.log(lastNameArray);
@@ -85,18 +132,14 @@
 					newPlayer(false);
 					score+=1;
 					$('#score').html("Score: " + score);
-				} else {
-					//Indicate wrong name by flashing or something
-				}
-				$('input').val('');
+				} 
+				$('#answer').val('');
 			}
+			//Pressing the 'enter' key also submits answer
 			window.addEventListener('keydown', function(e) {
 				if (e.keyCode === 13) {
 					check();
 				}
-				// if (e.keyCode === 16) {
-				// 	newPlayer(true);
-				// }
 			});
 		</script>
 	</head>
@@ -105,13 +148,15 @@
 		<div id='main'>
 			<div id="timer"></div><br>
 			<div id="img"></div><br>
-			<input type="text"><br>
+			<input id="answer" type="text"><br>
 			<button onclick="check()">Enter</button>
 			<button onclick="newPlayer(true)">Pass</button>	
 			<div id="score">Score: 0</div>
 		</div>
+		<div id="scores"></div>
 		<div id="alert" style='display:none'>
-			<br><button onclick="init()">Play Again?
-		</button></div>
+			<br><button onclick="init()">Play Again?</button>
+			<br><button onclick="highScores()">High Scores</button>
+		</div>
 	</body>
 <HTML>

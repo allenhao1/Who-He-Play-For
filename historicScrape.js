@@ -28,7 +28,26 @@ if(process.argv[3]) {
 } else {
   urlBase+= 2016; //Default to current year
 }
-
+function UrlExists(url, name){
+  request(url, function (error, response, html) {
+    if(!error) {
+      var newPlayer = new Player({
+        name: name,
+        url: url
+      });
+    }
+    var query = Player.find({'name': name, 'url': url}, function (err, doc){
+      if(doc.length == 0) {
+        newPlayer.save(function(err, newPlayer) {
+            if (err) {console.error(err);}
+            else { console.log(newPlayer);}
+          });
+      } else {
+        console.log("Player already in database");
+      }
+    });
+  });
+}
 
 request(urlBase + "_per_game.html" , function (error, response, html) {
   if (!error && response.statusCode == 200) {
@@ -42,17 +61,7 @@ request(urlBase + "_per_game.html" , function (error, response, html) {
         var picURL = picURLFrag + playerURL + ".png";
         console.log(playerName);
         console.log(playerURL);
-        var newPlayer = new Player({
-          name: playerName,
-          url: picURL
-        });
-        newPlayer.save(function(err, newPlayer) {
-          if (err) {
-            console.error(err);
-          } else {
-            console.log(newPlayer);
-          }
-        });
+        UrlExists(picURL, playerName);
     });
 
   }

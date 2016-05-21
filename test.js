@@ -1,5 +1,3 @@
-var players = require('./retrieve');
+var db = require('./db');
+var Player = db.Player;
 
-console.log(players.playerList);
-console.log(players.test);
-console.log(players.test2);
