@@ -1,31 +1,44 @@
 <Doctype HTML>
 <HTML>
 	<head>
-		<title>Who He Play For?</title>
+		<meta charset="utf-8">
+		<title>Name That Player!</title>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+		<link rel="icon" type="image/png" href="public/favicon-96x96.png" sizes="96x96">
+  		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"> 
+  		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> 
+  		<link rel="stylesheet" type="text/css" href="style.css">  
 		<script>
 		
 		</script>
 		<script>
-			var playerList = [];
 			var currPlayer;
+			var nextPlayer;
+			var playerList = [];
 			var score = 0;
 			$.ajax({
 			  url: '/JSONreq',
 			  complete: function(data) {
 			    playerList = data.responseJSON.playerList;
 			    console.log(data);
-			    newPlayer();
+			    currPlayer = playerList[Math.floor(playerList.length * Math.random())];
+			    nextPlayer = playerList[Math.floor(playerList.length * Math.random())];
+			    //$('#img').css({'background-image': 'url(' + nextPlayer.url + ')'});
+			    $('#img').html("<img src=' " + currPlayer.url +"' onError=newPlayer(false)>");
 			  }
 			});
+			//Load up 2 players at a time so there are smooth transitions
 			function newPlayer(pass){ 
+					currPlayer = nextPlayer;
 					var randIndex = Math.floor(playerList.length * Math.random());
-					currPlayer = playerList[randIndex];
+					nextPlayer = playerList[randIndex];
 					console.log(currPlayer);
 					if(!pass) {
 						playerList.splice(randIndex, 1); //Take player out of remaining players if the player passed
 					}
-					$('#img').html("<img src=' " + currPlayer.url +"'>");
+					//$('#img').css({'background-image': 'url(' + nextPlayer.url + ')'});
+					$('#img').html("<img src=' " + currPlayer.url +"' onError=newPlayer(false)>");
+
 			}
 			function check() {
 				var guess = $('input').val().toLowerCase();
@@ -46,7 +59,7 @@
 				console.log(lastNameGuess);
 				console.log(lastName);
 				if(guess === answer || lastNameGuess === lastName) {
-					newPlayer();
+					newPlayer(false);
 					score+=1;
 					$('#score').html(score);
 				} else {
@@ -57,18 +70,20 @@
 			window.addEventListener('keydown', function(e) {
 				if (e.keyCode === 13) {
 					check();
-				} else if (e.keyCode === 32) {
+				} else if (e.keyCode === 16) {
 					newPlayer(true);
 				}
 			});
 		</script>
 	</head>
 	<body>
-		<p1>Who He Play For?</p1>
-		<div id="score">0</div>
-		<div id="img"></div><br>
-		<input type="text"> 
-		<button onclick="check()">Enter</button>
-		<button onclick="newPlayer(true)">Pass</button>	
+		<h1>Name That Player!</h1>
+		<div id='main'>
+			<div id="img"></div><br>
+			<input type="text"><br>
+			<button onclick="check()">Enter</button>
+			<button onclick="newPlayer(true)">Pass</button>	
+			<div id="score">0</div>
+		</div>
 	</body>
 <HTML>

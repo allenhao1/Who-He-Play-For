@@ -37,9 +37,6 @@ var query = Player.find(function (err, players) {
 	});
 
 
-
-
-
 	app.listen(app.get('port'), function() {
 		console.log('Express started on http://localhost:' + app.get('port') + '; Press Ctrl-C to Terminate')
 	});
