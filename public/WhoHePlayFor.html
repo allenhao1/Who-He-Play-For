@@ -7,27 +7,44 @@
 		
 		</script>
 		<script>
-			var playerList;
+			var playerList = [];
+			var currPlayer;
+			var score = 0;
 			$.ajax({
 			  url: '/JSONreq',
 			  complete: function(data) {
-			    playerList = data.responseJSON;
-			    console.log(playerList);
-			    function newPlayer(){ 
-					var keys = playerList.length;
-					var currPlayer = playerList[keys[keys.length * Math.random() << 0]];
-					console.log(currPlayer);
-					//$('#img').html("<img src=' " + currPlayer. )
-				}
+			    playerList = data.responseJSON.playerList;
+			    console.log(data);
+			    newPlayer();
 			  }
 			});
-			
+			function newPlayer(pass){ 
+					var randIndex = Math.floor(playerList.length * Math.random());
+					currPlayer = playerList[randIndex];
+					console.log(currPlayer);
+					if(!pass) {
+						playerList.splice(randIndex, 1); //Take player out of remaining players
+					}
+					$('#img').html("<img src=' " + currPlayer.url +"'>");
+			}
+			function check() {
+				if($('input').val() == currPlayer.name) {
+					newPlayer();
+					score+=1;
+					$('#score').html(score);
+				} else {
+					//Indicate wrong name by flashing or something
+				}
+				$('input').val('');
+			}
 		</script>
 	</head>
 	<body>
 		<p1>Who He Play For?</p1>
-		<div id="img"><div><br>
+		<div id="score">0</div>
+		<div id="img"></div><br>
 		<input type="text"> 
+		<button onclick="check()">Enter</button>
 		<button onclick="newPlayer()">Enter</button>	
 	</body>
 <HTML>
