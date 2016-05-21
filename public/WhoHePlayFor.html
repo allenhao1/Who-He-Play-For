@@ -23,12 +23,29 @@
 					currPlayer = playerList[randIndex];
 					console.log(currPlayer);
 					if(!pass) {
-						playerList.splice(randIndex, 1); //Take player out of remaining players
+						playerList.splice(randIndex, 1); //Take player out of remaining players if the player passed
 					}
 					$('#img').html("<img src=' " + currPlayer.url +"'>");
 			}
 			function check() {
-				if($('input').val() == currPlayer.name) {
+				var guess = $('input').val().toLowerCase();
+				var answer = currPlayer.name.toLowerCase();
+				//Allow user to also put in last name
+				var lastNameGuessArray = guess.split(" ");
+				var lastNameArray = answer.split(" ");
+				console.log(lastNameGuessArray);
+				console.log(lastNameArray);
+				var lastNameGuess = "";
+				var lastName = "";
+				for(var i = 0; i < lastNameArray.length; i++) {
+					lastNameGuess +=lastNameGuessArray[i];
+					lastName += lastNameArray[i+1];
+				}
+				console.log(guess);
+				console.log(answer);
+				console.log(lastNameGuess);
+				console.log(lastName);
+				if(guess === answer || lastNameGuess === lastName) {
 					newPlayer();
 					score+=1;
 					$('#score').html(score);
@@ -37,6 +54,13 @@
 				}
 				$('input').val('');
 			}
+			window.addEventListener('keydown', function(e) {
+				if (e.keyCode === 13) {
+					check();
+				} else if (e.keyCode === 32) {
+					newPlayer(true);
+				}
+			});
 		</script>
 	</head>
 	<body>
@@ -45,6 +69,6 @@
 		<div id="img"></div><br>
 		<input type="text"> 
 		<button onclick="check()">Enter</button>
-		<button onclick="newPlayer()">Enter</button>	
+		<button onclick="newPlayer(true)">Pass</button>	
 	</body>
 <HTML>
