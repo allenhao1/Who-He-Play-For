@@ -14,15 +14,20 @@
 			var currPlayer;
 			var nextPlayer;
 			var playerList = [];
-			var score = 0;
+			var score;
 			function init() {
+				$('#main').show();
+				$('#alert').html('');
+				playerCounter = 0;
+				score = 0;
 				var i = 10;
 		  		var timer = setInterval(function() { 
 		  			i--;
 		  			$('#timer').html("Seconds Left: " + i);
 		  			if(i === 0) {
-		  				$('#main').html('<h1>You got ' + score + ' points!</h1>');
-		  				$('#main').append('<br><button onclick="init()">Play Again?</button>');
+		  				$('#main').hide();
+		  				$('#alert').prepend('<h1>You got ' + score + ' points!</h1>');
+		  				$('#alert').show();
 		  				clearInterval(timer);
 		  			} 
 		  		}, 1000);
@@ -104,5 +109,8 @@
 			<button onclick="newPlayer(true)">Pass</button>	
 			<div id="score">Score: 0</div>
 		</div>
+		<div id="alert" style='display:none'>
+			<br><button onclick="init()">Play Again?
+		</button></div>
 	</body>
 <HTML>
