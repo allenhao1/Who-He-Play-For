@@ -20,11 +20,11 @@
 				$('#alert').html('');
 				playerCounter = 0;
 				score = 0;
-				var i = 10;
+				var time = 60;
 		  		var timer = setInterval(function() { 
-		  			i--;
-		  			$('#timer').html("Seconds Left: " + i);
-		  			if(i === 0) {
+		  			time--;
+		  			$('#timer').html("Seconds Left: " + time);
+		  			if(time === 0) {
 		  				$('#main').hide();
 		  				$('#alert').prepend('<h1>You got ' + score + ' points!</h1>');
 		  				$('#alert').show();
@@ -51,6 +51,7 @@
 					$('#' + playerCounter).show();
 					$('#' + (playerCounter - 1) ).remove(); 
 					currPlayer = nextPlayer;
+					console.log(currPlayer.name);
 					var randIndex = Math.floor(playerList.length * Math.random());
 					nextPlayer = playerList[randIndex];
 					console.log(currPlayer);
@@ -59,7 +60,7 @@
 					}
 					$('#img').html("<img id='" + playerCounter + "' src=' " + currPlayer.url +"' onError=newPlayer(false)>");
 				    playerCounter++;
-				    $('#img').append("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none' onError=newPlayer(false)>");
+				    $('#img').append("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none'");
 
 			}
 			function check() {
