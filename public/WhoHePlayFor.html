@@ -10,31 +10,34 @@
   		<link rel="stylesheet" type="text/css" href="style.css">  
 
 		<script>
-			var i = 10;
-	  		var timer = setInterval(function() { 
-	  			i--;
-	  			$('#timer').html("Seconds Left: " + i);
-	  			if(i === 0) {
-	  				$('#main').html('<h1>You got ' + score + ' points!');
-	  				clearInterval(timer);
-	  			} 
-	  		}, 1000);
-
 			var currPlayer;
 			var nextPlayer;
 			var playerList = [];
 			var score = 0;
-			$.ajax({
-			  url: '/JSONreq',
-			  complete: function(data) {
-			    playerList = data.responseJSON.playerList;
-			    console.log(data);
-			    currPlayer = playerList[Math.floor(playerList.length * Math.random())];
-			    nextPlayer = playerList[Math.floor(playerList.length * Math.random())];
-			    //$('#img').css({'background-image': 'url(' + nextPlayer.url + ')'});
-			    $('#img').html("<img src=' " + currPlayer.url +"' onError=newPlayer(false)>");
-			  }
-			});
+			function init() {
+				var i = 10;
+		  		var timer = setInterval(function() { 
+		  			i--;
+		  			$('#timer').html("Seconds Left: " + i);
+		  			if(i === 0) {
+		  				$('#main').html('<h1>You got ' + score + ' points!</h1>');
+		  				$('#main').append('<br><button onclick="init()">Play Again?</button>');
+		  				clearInterval(timer);
+		  			} 
+		  		}, 1000);
+				$.ajax({
+				  url: '/JSONreq',
+				  complete: function(data) {
+				    playerList = data.responseJSON.playerList;
+				    console.log(data);
+				    currPlayer = playerList[Math.floor(playerList.length * Math.random())];
+				    nextPlayer = playerList[Math.floor(playerList.length * Math.random())];
+				    //$('#img').css({'background-image': 'url(' + nextPlayer.url + ')'});
+				    $('#img').html("<img src=' " + currPlayer.url +"' onError=newPlayer(false)>");
+				  }
+				});
+			}
+			init();
 			//Load up 2 players at a time so there are smooth transitions
 			function newPlayer(pass){ 
 					currPlayer = nextPlayer;
