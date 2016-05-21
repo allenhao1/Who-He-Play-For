@@ -8,10 +8,18 @@
   		<link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"> 
   		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> 
   		<link rel="stylesheet" type="text/css" href="style.css">  
+
 		<script>
-		
-		</script>
-		<script>
+			var i = 10;
+	  		var timer = setInterval(function() { 
+	  			i--;
+	  			$('#timer').html("Seconds Left: " + i);
+	  			if(i === 0) {
+	  				$('#main').html('<h1>You got ' + score + ' points!');
+	  				clearInterval(timer);
+	  			} 
+	  		}, 1000);
+
 			var currPlayer;
 			var nextPlayer;
 			var playerList = [];
@@ -70,15 +78,17 @@
 			window.addEventListener('keydown', function(e) {
 				if (e.keyCode === 13) {
 					check();
-				} else if (e.keyCode === 16) {
-					newPlayer(true);
 				}
+				// if (e.keyCode === 16) {
+				// 	newPlayer(true);
+				// }
 			});
 		</script>
 	</head>
 	<body>
 		<h1>Name That Player!</h1>
 		<div id='main'>
+			<div id="timer"></div><br>
 			<div id="img"></div><br>
 			<input type="text"><br>
 			<button onclick="check()">Enter</button>
