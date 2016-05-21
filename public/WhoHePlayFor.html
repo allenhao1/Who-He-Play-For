@@ -10,6 +10,7 @@
   		<link rel="stylesheet" type="text/css" href="style.css">  
 
 		<script>
+			var playerCounter = 0;
 			var currPlayer;
 			var nextPlayer;
 			var playerList = [];
@@ -33,13 +34,17 @@
 				    currPlayer = playerList[Math.floor(playerList.length * Math.random())];
 				    nextPlayer = playerList[Math.floor(playerList.length * Math.random())];
 				    //$('#img').css({'background-image': 'url(' + nextPlayer.url + ')'});
-				    $('#img').html("<img src=' " + currPlayer.url +"' onError=newPlayer(false)>");
+				    $('#img').html("<img id='" + playerCounter + "' src=' " + currPlayer.url +"' onError=newPlayer(false)>");
+				    playerCounter++;
+				    $('#img').append("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none' onError=newPlayer(false)>");
 				  }
 				});
 			}
 			init();
 			//Load up 2 players at a time so there are smooth transitions
 			function newPlayer(pass){ 
+					$('#' + playerCounter).show();
+					$('#' + (playerCounter - 1) ).remove(); 
 					currPlayer = nextPlayer;
 					var randIndex = Math.floor(playerList.length * Math.random());
 					nextPlayer = playerList[randIndex];
@@ -47,8 +52,9 @@
 					if(!pass) {
 						playerList.splice(randIndex, 1); //Take player out of remaining players if the player passed
 					}
-					//$('#img').css({'background-image': 'url(' + nextPlayer.url + ')'});
-					$('#img').html("<img src=' " + currPlayer.url +"' onError=newPlayer(false)>");
+					$('#img').html("<img id='" + playerCounter + "' src=' " + currPlayer.url +"' onError=newPlayer(false)>");
+				    playerCounter++;
+				    $('#img').append("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none' onError=newPlayer(false)>");
 
 			}
 			function check() {
@@ -72,7 +78,7 @@
 				if(guess === answer || lastNameGuess === lastName) {
 					newPlayer(false);
 					score+=1;
-					$('#score').html(score);
+					$('#score').html("Score: " + score);
 				} else {
 					//Indicate wrong name by flashing or something
 				}
@@ -96,7 +102,7 @@
 			<input type="text"><br>
 			<button onclick="check()">Enter</button>
 			<button onclick="newPlayer(true)">Pass</button>	
-			<div id="score">0</div>
+			<div id="score">Score: 0</div>
 		</div>
 	</body>
 <HTML>
