@@ -6,7 +6,6 @@ var mongoose = require('mongoose');
 var db = require('./db');
 var Player = db.Player;
 var Highscore = db.Highscore;
-
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -32,8 +31,22 @@ Highscore.find({}).sort({score: 1}).limit(5).exec(function(err, scores) {
 			res.json({scores: scores});
 		});
 		app.post('/postScores', function(req, res){
-			HighScore.remove({}, function(err) { 
-				console.log(req.body.name);
+			Highscore.remove({}, function(err) { 
+				console.log("sent over: ");
+				console.log(req);
+				var scores = req.body;
+				for (var name in scores) {
+				  if (scores.hasOwnProperty(name)) {
+				    var score = new Highscore ({
+				    	name: name,
+				    	score : scores[name]
+				    });
+				    score.save(function(err, score) {
+			            if (err) {console.error(err);}
+			            else { console.log(score);}
+			          });
+				  }
+				}
 			});
 		})
 		//404 Page

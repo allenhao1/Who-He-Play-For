@@ -13,6 +13,7 @@
 			var playerCounter = 0;
 			var currPlayer;
 			var nextPlayer;
+			var highScores;
 			var playerList = [];
 			var score;
 			function init() {
@@ -20,7 +21,7 @@
 				$('#scores').html('');
 				playerCounter = 0;
 				score = 0;
-				var time = 10;
+				var time = 5;
 		  		var timer = setInterval(function() { 
 		  			time--;
 		  			$('#timer').html("Seconds Left: " + time);
@@ -28,7 +29,7 @@
 		  				$('#main').hide();
 		  				$('#scores').show();
 		  				$('#alert').show();
-		  				checkHighScore();
+						checkHighScore();
 		  				clearInterval(timer);
 		  			} 
 		  		}, 1000);
@@ -47,6 +48,7 @@
 				});
 			}
 			init();
+			
 			//Load up 2 players at a time so there are smooth transitions
 			function newPlayer(pass){ 
 					$('#' + playerCounter).show();
@@ -68,38 +70,59 @@
 			function checkHighScore(){
 				$.ajax({
 				  url: '/highscores',
-				  complete: function(data) {
-				  	var highScores = data.responseJSON.scores;
+				  complete: function(data){	
+				  	highScores = data.responseJSON.scores;
 				  	console.log(highScores);
 				  	var smallest = highScores[highScores.length-1];
-				  	if (score > smallest || smallest == null) {
+				  	var jsonScores = JSON.stringify(highScores);
+				  	if ( (score != 0) && (score > smallest || smallest == null || highScores.length < 5) ) {
 				  		$('#scores').append('<h1>You got ' + score + ' points!</h1>');
 				  		$("#scores").append('<h2>Congratulations, you got a High Score!</h2><br>')
 				  		$("#scores").append('<label for="name">Enter name here: </label>');
 				  		$("#scores").append('<input id="name" type="text"><br>')
-				  		$("#scores").append('<button onclick="addHighScore(' + highScores + ')">Submit</button>')
-				  		
-				  		
-				  		
+				  		$("#scores").append("<button onclick='addHighScore(" + jsonScores +", " + score +  ")'>Submit</button>")
 				  	}
-				  }
+
+				  }	  
 				});
+			  	
 			}
-			function addHighScore(highScores){
-				if(highScores) {
-					highScores = highScores.splice(highScores.length-1, 1);//Splice out the smallest score and replace with current score
-					highScores.name = score; 
+			function showScores() {
+				$.ajax({
+				  url: '/highscores',
+				  complete: function(data){	
+				  	var highScores = data.responseJSON.scores;
+					var scores = $('scores');
+					console.log(highScores);
+					scores.html('<table><tr><th>Name</th><th>Score</th></tr>');
+					for (var i = 0; i < highScores.length; i++) {
+						scores.append('<tr>');
+						console.log(highScores[i]);
+						//scores.append('<th>' + highScores[i].name + '</th><th>' + highScores[i].)
+					}
+				  }	  
+				});
+				
+				
+			}
+			function addHighScore(highScores, score){
+				//var highScores = JSON.parse(jsonScores);
+				console.log("score: " + score );
+				$('#scores').hide();
+				var username = $('#name').val();
+				console.log(highScores);
+				if(highScores.length > 0) {
+					if (highScores.length > 5) {
+						highScores = highScores.splice(highScores.length-1, 1);//Splice out the smallest score and replace with current score
+					}
+					highScores[username] = score; 
+					console.log(highScores);
 				} else {
 					var highScores = {};
-					highScores.name = score;
+					highScores[username] = score;
 				}
-				$.ajax({
-					  type: "POST",
-					  url: "/postScores",
-					  data: highScores,
-					  success: null,
-					  dataType: "json"
-					});
+				console.log(highScores);
+				$.post("/postScores", highScores, showScores());
 			}
 			function changeNext(playerCounter){//Handles bad pictures and changes next picture
 				console.log("error");
@@ -110,25 +133,29 @@
 				console.log(playerCounter);
 				$('#'+playerCounter).html("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none' onError=changeNext(" + playerCounter + ")>");
 			}
+			function getLastName(name) { //Returns last name as array. Have to account for hyphenated first/last names and suffixes (Jr, III)
+				var nonName = /jr.|iii|\'/g; //Regex that matches Jr. or III as well as apostrophes
+				name = name.replace(nonName, "").trim(); //Replace undesirable suffixes, etc.
+				var array = name.split(" ");
+				array.splice(0, 1);
+				array = array[array.length-1].split(/-/); 
+				var lastName = array[0];
+				for(var i = 1; i < array.length; i++) { //Assemble name string
+					lastName+= " " + array[i];
+				}
+				return lastName;
+			}
 			function check() {
+
 				var guess = $('#answer').val().toLowerCase();
 				var answer = currPlayer.name.toLowerCase();
 				//Allow user to also put in last name
-				var lastNameGuessArray = guess.split(/[\s-]/);
-				var lastNameArray = answer.split(" ");
-				console.log(lastNameGuessArray);
-				console.log(lastNameArray);
-				var lastNameGuess = "";
-				var lastName = "";
-				for(var i = 0; i < lastNameArray.length; i++) {
-					lastNameGuess +=lastNameGuessArray[i];
-					lastName += lastNameArray[i+1];
-				}
+				var lastName = getLastName(answer);
 				console.log(guess);
 				console.log(answer);
-				console.log(lastNameGuess);
+				console.log(guess);
 				console.log(lastName);
-				if(guess === answer || lastNameGuess === lastName) {
+				if(guess === answer || guess == lastName) {
 					newPlayer(false);
 					score+=1;
 					$('#score').html("Score: " + score);

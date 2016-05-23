@@ -28,9 +28,14 @@ if(process.argv[3]) {
 } else {
   urlBase+= 2016; //Default to current year
 }
-function UrlExists(url, name){
+function UrlExists(url, altUrl, name){
   request(url, function (error, response, html) {
-    if(!error) {
+    if(response == 404) {
+      var newPlayer = new Player({
+        name: name,
+        url: altUrl
+      });
+    } else {
       var newPlayer = new Player({
         name: name,
         url: url
@@ -59,9 +64,10 @@ request(urlBase + "_per_game.html" , function (error, response, html) {
         var playerName = playerInfo.split(/[<>]/)[2].replace('&apos;', "'"); //Replace escaped quotes with single quotes
         var playerURL = playerInfo.split(/[/\.]/)[3];
         var picURL = picURLFrag + playerURL + ".png";
+        var altURL = picURLFrag + playerURL + ".jpg";
         console.log(playerName);
         console.log(playerURL);
-        UrlExists(picURL, playerName);
+        UrlExists(picURL, altURL, playerName);
     });
 
   }
