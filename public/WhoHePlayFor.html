@@ -22,9 +22,9 @@
 				$('#main').show();
 				$('#scores').html('');
 				playerCounter = 0;
-				score = 0;
+				score = 1;
 				paused = false;
-				var time = 60;
+				var time = 1;
 		  		var timer = setInterval(function() { 
 		  			if (!paused) {
 		  				time--;
@@ -72,17 +72,37 @@
 				    $('#img').append("<img id='" + playerCounter + "' src=' " + nextPlayer.url +"' style='display:none' onError='changeNext(" + playerCounter + ")'>");
 
 			}
+			function min(objects) {
+				var min = objects[0];
+				for(var i in objects){
+					if(objects[i].score < min.score) {
+						min = objects[i];
+					}
+				}
+				return min;
+			}
 			function checkHighScore(){
 				$.ajax({
 				  url: '/highscores',
 				  complete: function(data){	
 				  	highScores = data.responseJSON.scores;
 				  	console.log(highScores);
-				  	var smallest = highScores[highScores.length-1];
+				  	if(highScores.length > 0) {
+				  		var smallest = min(highScores);
+				  	} else {
+				  		var smallest = -1; //Doesn't matter what smallest is
+				  	}
+				  	console.log(smallest);
 				  	var jsonScores = JSON.stringify(highScores);
 				  	console.log(jsonScores);
-				  	if ( (score != 0) && (score > smallest || smallest == null || highScores.length < 5) ) {
-				  		$('#scores').append('<h1>You got ' + currentScore + ' points!</h1>');
+				  	console.log("Current Score: " + score);
+				  	console.log("Smallest score: " + smallest.score);
+				  	console.log(score > smallest.score );
+				  	console.log(smallest == null)
+				  	console.log(highScores.length < 5);
+				  	if ( (score != 0) && (score > smallest.score || smallest == null || highScores.length < 5) ) {
+				  		console.log("hello");
+				  		$('#scores').append('<h1>You got ' + score + ' points!</h1>');
 				  		$("#scores").append('<h2>Congratulations, you got a High Score!</h2><br>')
 				  		$("#scores").append('<label for="name">Enter name here: </label>');
 				  		$("#scores").append('<input id="name" type="text"><br>');
@@ -118,7 +138,7 @@
 
 				console.log(typeof(highScores));
 				console.log("score: " + currentScore );
-				$('#scores').hide();
+				//$('#scores').hide();
 				var username = $('#name').val();
 				console.log(highScores);
 				if(highScores.length > 0) {
@@ -129,7 +149,7 @@
 					console.log(highScores);
 				} else {
 					console.log("empty return");
-					var highScores = {};
+					var highScores = [];
 					highScores[username] = currentScore;
 					//highScores = { {'name': username, 'score' : currentScore} };
 				}
@@ -141,7 +161,10 @@
 				console.log(highScores);
 				// highScores = { user: 15, testUser: 20 }
 				// console.log(highScores);
-				$.post("/postScores", highScores, showScores());
+				// $.post("/postScores", highScores, complete: showScores());
+				//$.ajax({ method: 'POST', url: '/postScores', data: highScores, complete: showScores()});
+				$.ajax({ method: 'POST', url: '/postScores', complete: showScores(), data: highScores})
+				//$.post('/postScores', )
 			}
 			function changeNext(playerCounter){//Handles bad pictures and changes next picture
 				console.log("error");
@@ -165,17 +188,18 @@
 				return lastName;
 			}
 			function pause() {
-				if($('#hide').is(":visible") ) {
-					paused = false;
-					$('#main').show();
-					$('#hide').hide();
+				if(paused) {
+					$('#content').show();
+					$('#pausebtn').html('Pause');
+					$('#pause').css('border', 'none');
+					$('#pause').css('padding', 'none');
 				} else {
-					paused = true;
-					$('#main').hide();
-					$('#hide').show();
+					$('#content').hide();
+					$('#pausebtn').html('Unpause');
+					$('#pause').css('border', '1px solid black');
+					$('#pause').css('padding', '70px');
 				}
-				
-
+				paused = !paused;
 			}
 			function check() {
 
@@ -204,24 +228,25 @@
 	</head>
 	<body>
 		<h1>Name That Player!</h1>
-		<div id="timer"></div><br>
-		<div id="score">Score: 0</div>
-		<div id='main'>
-			<div id="img"></div><br>
-			<input id="answer" type="text"><br>
-			<button onclick="check()">Enter</button>
-			<button onclick="newPlayer(true)">Pass</button>	
-			
-		</div>
-		<div id="scores"></div>
-		<div id = "hide" style='display:none'>
-			<button class="pausebtn" onclick="pause()">Unpause</button>
+		<div id="main">
+			<div id="timer"></div><br>
+			<div id="score">Score: 0</div>
+			<div id='content'>
+				<div id="img"></div><br>
+				<input id="answer" type="text"><br>
+				<button onclick="check()">Enter</button>
+				<button onclick="newPlayer(true)">Pass</button>	
+				
+			</div>
+			<div id = "pause" >
+				<button id="pausebtn" onclick="pause()">Pause</button>
 
+			</div>
 		</div>
+		<div id="scores"></div>		
 		<div id="alert">
 			<br><button onclick="init()">Play Again?</button>
 			<button onclick="showScores()">High Scores</button>
-			<button onclick="pause()">Pause</button>
 		</div>
 	</body>
 <HTML>
