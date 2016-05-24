@@ -33,19 +33,41 @@ Highscore.find({}).sort({score: 1}).limit(5).exec(function(err, scores) {
 		app.post('/postScores', function(req, res){
 			Highscore.remove({}, function(err) { 
 				console.log("sent over: ");
-				console.log(req);
-				var scores = req.body;
-				for (var name in scores) {
-				  if (scores.hasOwnProperty(name)) {
-				    var score = new Highscore ({
+				
+				var scores = JSON.parse(req.body.highscores);
+				console.log(scores);
+				//console.log(JSON.parse(req.body));
+				//console.log(req.body);
+				console.log(scores.length);
+				if (scores.length > 1) {
+					console.log("HELLO!");
+					for(var objectIndex in scores) {
+						console.log(objectIndex);
+						console.log(scores[objectIndex]);
+						//if (scores.hasOwnProperty(object)) {
+							var object = scores[objectIndex];
+							console.log('Object ' + objectIndex);
+							console.log(object);
+						    var score = new Highscore ({
+						    	name: object.name,
+						    	score : object.score
+						    });
+						    score.save(function(err, score) {
+					            if (err) {console.error(err);}
+					            else { console.log("success"); console.log(score);}
+					        });
+						//}
+					}
+				} else {
+					var name = Object.keys(scores)[0]
+					var score = new Highscore ({
 				    	name: name,
 				    	score : scores[name]
 				    });
 				    score.save(function(err, score) {
 			            if (err) {console.error(err);}
-			            else { console.log(score);}
-			          });
-				  }
+			            else { console.log("success"); console.log(score);}
+			        });
 				}
 			});
 		})

@@ -15,15 +15,20 @@
 			var nextPlayer;
 			var highScores;
 			var playerList = [];
+			var paused;
 			var score;
 			function init() {
+				//$('#alert').hide();
 				$('#main').show();
 				$('#scores').html('');
 				playerCounter = 0;
 				score = 0;
-				var time = 5;
+				paused = false;
+				var time = 60;
 		  		var timer = setInterval(function() { 
-		  			time--;
+		  			if (!paused) {
+		  				time--;
+		  			}
 		  			$('#timer').html("Seconds Left: " + time);
 		  			if(time === 0) {
 		  				$('#main').hide();
@@ -75,39 +80,44 @@
 				  	console.log(highScores);
 				  	var smallest = highScores[highScores.length-1];
 				  	var jsonScores = JSON.stringify(highScores);
+				  	console.log(jsonScores);
 				  	if ( (score != 0) && (score > smallest || smallest == null || highScores.length < 5) ) {
-				  		$('#scores').append('<h1>You got ' + score + ' points!</h1>');
+				  		$('#scores').append('<h1>You got ' + currentScore + ' points!</h1>');
 				  		$("#scores").append('<h2>Congratulations, you got a High Score!</h2><br>')
 				  		$("#scores").append('<label for="name">Enter name here: </label>');
-				  		$("#scores").append('<input id="name" type="text"><br>')
-				  		$("#scores").append("<button onclick='addHighScore(" + jsonScores +", " + score +  ")'>Submit</button>")
+				  		$("#scores").append('<input id="name" type="text"><br>');
+				  		$("#scores").append("<button onclick='addHighScore(" + jsonScores +", " + score +  ")'>Submit</button>");
 				  	}
-
 				  }	  
 				});
-			  	
 			}
 			function showScores() {
 				$.ajax({
 				  url: '/highscores',
 				  complete: function(data){	
+				  	console.log(showScores);
 				  	var highScores = data.responseJSON.scores;
-					var scores = $('scores');
+					var scores = $('#scores');
 					console.log(highScores);
-					scores.html('<table><tr><th>Name</th><th>Score</th></tr>');
+					scores.show();
+					var html = '<table><tr><th>Name</th><th>Score</th></tr>';
+					console.log(html);
 					for (var i = 0; i < highScores.length; i++) {
-						scores.append('<tr>');
-						console.log(highScores[i]);
-						//scores.append('<th>' + highScores[i].name + '</th><th>' + highScores[i].)
+						html += '<tr>';
+						//console.log(highScores[i]);
+						html += '<th>' + highScores[i].name + '</th><th>' + highScores[i].score;
 					}
+					html += '</table>';
+					console.log(html);
+					scores.show(html);
+					scores.html(html);
 				  }	  
 				});
-				
-				
 			}
-			function addHighScore(highScores, score){
-				//var highScores = JSON.parse(jsonScores);
-				console.log("score: " + score );
+			function addHighScore(highScores, currentScore){
+
+				console.log(typeof(highScores));
+				console.log("score: " + currentScore );
 				$('#scores').hide();
 				var username = $('#name').val();
 				console.log(highScores);
@@ -115,13 +125,22 @@
 					if (highScores.length > 5) {
 						highScores = highScores.splice(highScores.length-1, 1);//Splice out the smallest score and replace with current score
 					}
-					highScores[username] = score; 
+					highScores.push({name: username, score: currentScore});  
 					console.log(highScores);
 				} else {
+					console.log("empty return");
 					var highScores = {};
-					highScores[username] = score;
+					highScores[username] = currentScore;
+					//highScores = { {'name': username, 'score' : currentScore} };
 				}
+				//console.log(highScores[username].score);
+				//highScores.push({name: 'test', score: 27});  
+				highScores = JSON.stringify(highScores)
 				console.log(highScores);
+				highScores = {'highscores' :  highScores};
+				console.log(highScores);
+				// highScores = { user: 15, testUser: 20 }
+				// console.log(highScores);
 				$.post("/postScores", highScores, showScores());
 			}
 			function changeNext(playerCounter){//Handles bad pictures and changes next picture
@@ -144,6 +163,19 @@
 					lastName+= " " + array[i];
 				}
 				return lastName;
+			}
+			function pause() {
+				if($('#hide').is(":visible") ) {
+					paused = false;
+					$('#main').show();
+					$('#hide').hide();
+				} else {
+					paused = true;
+					$('#main').hide();
+					$('#hide').show();
+				}
+				
+
 			}
 			function check() {
 
@@ -172,18 +204,24 @@
 	</head>
 	<body>
 		<h1>Name That Player!</h1>
+		<div id="timer"></div><br>
+		<div id="score">Score: 0</div>
 		<div id='main'>
-			<div id="timer"></div><br>
 			<div id="img"></div><br>
 			<input id="answer" type="text"><br>
 			<button onclick="check()">Enter</button>
 			<button onclick="newPlayer(true)">Pass</button>	
-			<div id="score">Score: 0</div>
+			
 		</div>
 		<div id="scores"></div>
-		<div id="alert" style='display:none'>
+		<div id = "hide" style='display:none'>
+			<button class="pausebtn" onclick="pause()">Unpause</button>
+
+		</div>
+		<div id="alert">
 			<br><button onclick="init()">Play Again?</button>
-			<br><button onclick="highScores()">High Scores</button>
+			<button onclick="showScores()">High Scores</button>
+			<button onclick="pause()">Pause</button>
 		</div>
 	</body>
 <HTML>
